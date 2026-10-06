@@ -1,0 +1,15 @@
+{
+  "name": "twitterunfollow",
+  "version": "1.0.0",
+  "description": "Slowly unfollows everyone on your X/Twitter account through the web UI (no API key), with rate-limit-aware pacing.",
+  "type": "module",
+  "private": true,
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "start": "node src/cli.js",
+    "test": "node --test test/*.test.js"
+  },
+  "dependencies": {
+    "playwright-core": "1.63.0"
+  }
+}
