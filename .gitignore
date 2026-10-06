@@ -2,3 +2,5 @@ node_modules/
 data/
 .env
 *.log
+.web-env
+.web-config

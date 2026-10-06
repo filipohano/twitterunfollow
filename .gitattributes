@@ -1,0 +1,4 @@
+# Keep shell scripts and the Dockerfile on Unix line endings even if checked out on Windows.
+*.sh text eol=lf
+Dockerfile text eol=lf
+*.md text eol=lf

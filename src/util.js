@@ -38,6 +38,22 @@ export function formatDuration(ms) {
   return `${(m / 60).toFixed(1)}h`;
 }
 
+const logSinks = new Set();
+
+// Lets the web server capture log lines (for the dashboard and bot.log) without changing callers.
+export function addLogSink(fn) {
+  logSinks.add(fn);
+  return () => logSinks.delete(fn);
+}
+
 export function log(msg) {
-  console.log(`${new Date().toISOString()} ${msg}`);
+  const line = `${new Date().toISOString()} ${msg}`;
+  console.log(line);
+  for (const sink of logSinks) {
+    try {
+      sink(line);
+    } catch {
+      /* a broken sink must never break the bot */
+    }
+  }
 }

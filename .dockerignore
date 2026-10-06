@@ -4,3 +4,5 @@ data
 .git
 test
 *.md
+.web-env
+.web-config

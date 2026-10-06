@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="referrer" content="no-referrer">
+  <meta name="theme-color" content="#f3f5f8" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0e1318" media="(prefers-color-scheme: dark)">
+  <title>Unfollow Bot</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%231b5fd6'/%3E%3Cg fill='none' stroke='white' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='13' cy='11' r='4.5'/%3E%3Cpath d='M5 26c0-4.5 3.6-8 8-8s8 3.5 8 8'/%3E%3Cpath d='M22 12h7'/%3E%3C/g%3E%3C/svg%3E">
+  <link rel="stylesheet" href="style.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <div id="net-notice" class="net-notice" role="status" hidden>Can't reach the server - retrying</div>
+
+  <noscript>
+    <p class="noscript">This page needs JavaScript to work. Please turn it on in your browser and reload.</p>
+  </noscript>
+
+  <p id="boot" class="boot">Loading...</p>
+
+  <!-- ============ LOGIN ============ -->
+  <main id="login-view" class="login" hidden>
+    <div class="card login-card">
+      <div class="brand">
+        <svg class="brand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="17" y1="11" x2="23" y2="11"/></svg>
+        <h1>Unfollow Bot</h1>
+      </div>
+      <p class="muted">Enter the password to check progress or start a run.</p>
+      <form id="login-form" method="post" action="/api/login" novalidate>
+        <p id="login-notice" class="notice" role="status" hidden></p>
+        <label for="password">Password</label>
+        <input id="password" name="password" type="password" autocomplete="current-password" aria-describedby="login-error" required>
+        <p id="login-error" class="form-error" role="alert" hidden></p>
+        <button id="login-btn" class="btn btn-primary btn-block" type="submit">Sign in</button>
+      </form>
+    </div>
+  </main>
+
+  <!-- ============ MAIN ============ -->
+  <div id="main-view" hidden>
+    <header class="topbar">
+      <div class="wrap topbar-inner">
+        <div class="brand">
+          <svg class="brand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="17" y1="11" x2="23" y2="11"/></svg>
+          <h1>Unfollow Bot</h1>
+        </div>
+        <button id="logout-btn" class="btn btn-secondary btn-small" type="button">Sign out</button>
+      </div>
+    </header>
+
+    <main class="wrap stack">
+
+      <!-- First-run checklist -->
+      <section id="checklist-card" class="card" aria-labelledby="checklist-title" hidden>
+        <h2 id="checklist-title">Get started in 3 steps</h2>
+        <ol id="checklist" class="steps">
+          <li id="step-1" data-done="false" data-current="false">
+            <span class="step-num" aria-hidden="true">1</span>
+            <span class="step-text"><strong>Save your cookies</strong><span class="step-desc">Paste two values from x.com into <a href="#settings">Settings</a> below.</span></span>
+            <span id="step-1-flag" class="sr-only"></span>
+          </li>
+          <li id="step-2" data-done="false" data-current="false">
+            <span class="step-num" aria-hidden="true">2</span>
+            <span class="step-text"><strong>Preview</strong><span class="step-desc">See who would be unfollowed. Nothing is changed.</span></span>
+            <span id="step-2-flag" class="sr-only"></span>
+          </li>
+          <li id="step-3" data-done="false" data-current="false">
+            <span class="step-num" aria-hidden="true">3</span>
+            <span class="step-text"><strong>Run</strong><span class="step-desc">It unfollows slowly in the background. You can close this page.</span></span>
+            <span id="step-3-flag" class="sr-only"></span>
+          </li>
+        </ol>
+      </section>
+
+      <!-- Status -->
+      <section id="status-card" class="card status" data-state="idle" aria-labelledby="status-title">
+        <h2 id="status-title" class="sr-only">Status</h2>
+
+        <div class="status-top">
+          <span id="state-badge" class="badge" data-state="idle" role="status"><span class="badge-dot" aria-hidden="true"></span><span id="state-badge-text">Ready</span></span>
+          <span id="mode-pill" class="pill" hidden></span>
+        </div>
+
+        <div class="headline-row">
+          <span id="spinner" class="spinner" aria-hidden="true" hidden></span>
+          <p id="headline" class="headline">Loading...</p>
+        </div>
+        <p id="subhint" class="subhint" hidden></p>
+        <p id="run-meta" class="meta" hidden></p>
+
+        <div id="error-box" class="alert" data-kind="error" role="alert" hidden>
+          <p id="error-text" class="alert-text"></p>
+          <p id="error-hint" class="alert-hint"></p>
+          <a id="error-help-link" class="alert-link" href="#help-cookies" hidden>Show me how to get fresh cookies</a>
+        </div>
+
+        <div id="rest-box" class="rest" hidden>
+          <p id="countdown" class="countdown" hidden></p>
+          <p id="wait-note" class="rest-note">This pause is deliberate. It keeps the bot under X's limits so your account stays safe. It will carry on by itself.</p>
+        </div>
+
+        <div id="progress-block" class="progress-block" hidden>
+          <div id="progress" class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-labelledby="progress-label" hidden>
+            <div id="progress-fill" class="progress-fill"></div>
+          </div>
+          <p id="progress-label" class="progress-label"></p>
+        </div>
+        <p id="eta" class="eta" hidden></p>
+
+        <dl class="stats">
+          <div class="stat">
+            <dt>Unfollowed this run</dt>
+            <dd id="unfollowed-run">0</dd>
+          </div>
+          <div class="stat">
+            <dt>Unfollowed in total</dt>
+            <dd id="unfollowed-total">0</dd>
+          </div>
+          <div class="stat">
+            <dt>In the last hour</dt>
+            <dd><span id="usage-hour">-</span><span class="meter" aria-hidden="true"><span id="usage-hour-bar" class="meter-fill"></span></span></dd>
+          </div>
+          <div class="stat">
+            <dt>In the last 24 hours</dt>
+            <dd><span id="usage-day">-</span><span class="meter" aria-hidden="true"><span id="usage-day-bar" class="meter-fill"></span></span></dd>
+          </div>
+        </dl>
+      </section>
+
+      <!-- Controls -->
+      <section id="controls-card" class="card controls" data-active="false" aria-labelledby="controls-title">
+        <h2 id="controls-title" class="sr-only">Controls</h2>
+        <div class="btn-row">
+          <button id="btn-preview" class="btn btn-secondary" type="button" disabled>Preview (nothing is unfollowed)</button>
+          <button id="btn-run" class="btn btn-danger" type="button" disabled>Unfollow everyone</button>
+          <button id="btn-stop" class="btn btn-stop" type="button" disabled>
+            <svg class="btn-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="5" y="5" width="14" height="14" rx="2.5"/></svg>
+            <span>Stop</span>
+          </button>
+        </div>
+        <p id="controls-note" class="small muted"></p>
+      </section>
+
+      <!-- Activity -->
+      <section id="activity" class="stack" aria-labelledby="activity-title">
+        <h2 id="activity-title" class="section-title">Activity</h2>
+
+        <div class="card">
+          <div class="card-head">
+            <h3>Recently unfollowed</h3>
+            <a id="download-csv" class="link-btn" href="/api/unfollowed.csv" download>Download full list (CSV)</a>
+          </div>
+          <p id="recent-empty" class="muted">Nobody has been unfollowed yet.</p>
+          <ol id="recent" class="recent" hidden></ol>
+        </div>
+
+        <div id="skipped-panel" class="card" hidden>
+          <h3>Could not unfollow</h3>
+          <p id="skipped-summary" class="muted"></p>
+          <ul id="skipped-list" class="handle-list"></ul>
+        </div>
+
+        <div id="preview-panel" class="card" hidden>
+          <h3>Preview result</h3>
+          <p id="preview-summary" class="preview-summary"></p>
+          <ul id="preview-list" class="handle-list" aria-label="Accounts that would be unfollowed"></ul>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <h3 id="log-title">Activity log</h3>
+            <button id="btn-copy-log" class="btn btn-secondary btn-small" type="button">Copy log</button>
+          </div>
+          <pre id="log" class="log" tabindex="0" aria-labelledby="log-title"></pre>
+        </div>
+      </section>
+
+      <!-- Settings -->
+      <section id="settings" class="card" aria-labelledby="settings-title">
+        <h2 id="settings-title" class="section-title">Settings</h2>
+
+        <form id="settings-form" method="post" action="/api/settings" novalidate autocomplete="off">
+          <fieldset class="group">
+            <legend>Your X cookies</legend>
+            <div class="creds-row">
+              <span id="creds-status" class="chip" data-saved="false">No cookies saved yet</span>
+              <button id="btn-forget" class="btn btn-quiet btn-small" type="button" disabled>Forget my cookies</button>
+            </div>
+            <p id="hint-cookies" class="hint">Paste both values from x.com. Once saved they are never shown again, so leave the boxes empty to keep the ones you saved. <a href="#help-cookies">How do I find them?</a></p>
+
+            <div class="field">
+              <label for="authToken">auth_token</label>
+              <input id="authToken" name="x-auth-token-value" type="password" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" data-lpignore="true" data-1p-ignore aria-describedby="err-authToken">
+              <p id="err-authToken" class="field-error" hidden></p>
+            </div>
+            <div class="field">
+              <label for="ct0">ct0</label>
+              <input id="ct0" name="x-ct0-value" type="password" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" data-lpignore="true" data-1p-ignore aria-describedby="err-ct0">
+              <p id="err-ct0" class="field-error" hidden></p>
+            </div>
+          </fieldset>
+
+          <fieldset class="group">
+            <legend>Your account <span class="optional">(optional)</span></legend>
+            <div class="field">
+              <label for="username">Your X handle</label>
+              <input id="username" name="x-handle" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="Leave empty to detect it automatically" aria-describedby="err-username">
+              <p id="err-username" class="field-error" hidden></p>
+            </div>
+          </fieldset>
+
+          <fieldset class="group">
+            <legend>Never unfollow these accounts</legend>
+            <div class="field">
+              <label for="keep">Keep list</label>
+              <textarea id="keep" name="keep-list" rows="5" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="one handle per line" aria-describedby="hint-keep err-keep"></textarea>
+              <p id="hint-keep" class="hint">One handle per line, with or without the @. These stay followed.</p>
+              <p id="err-keep" class="field-error" hidden></p>
+            </div>
+          </fieldset>
+
+          <fieldset class="group">
+            <legend>Speed limits</legend>
+            <p id="hint-pacing" class="hint">Lower numbers are safer for your account. The defaults are a good choice.</p>
+            <div class="grid-2">
+              <div class="field">
+                <label for="maxPerHour">Most per hour</label>
+                <input id="maxPerHour" name="max-per-hour" type="number" inputmode="numeric" min="1" step="any" autocomplete="off" aria-describedby="hint-pacing save-status">
+              </div>
+              <div class="field">
+                <label for="maxPerDay">Most per day</label>
+                <input id="maxPerDay" name="max-per-day" type="number" inputmode="numeric" min="1" step="any" autocomplete="off" aria-describedby="hint-pacing save-status">
+              </div>
+              <div class="field">
+                <label for="delayMin">Shortest pause (sec)</label>
+                <input id="delayMin" name="delay-min" type="number" inputmode="decimal" min="0" step="any" autocomplete="off" aria-describedby="hint-pacing save-status">
+              </div>
+              <div class="field">
+                <label for="delayMax">Longest pause (sec)</label>
+                <input id="delayMax" name="delay-max" type="number" inputmode="decimal" min="0" step="any" autocomplete="off" aria-describedby="hint-pacing save-status">
+              </div>
+            </div>
+            <button id="btn-defaults" class="btn btn-secondary btn-small defaults-btn" type="button">Reset speed limits to defaults</button>
+          </fieldset>
+
+          <div class="form-actions">
+            <button id="btn-save" class="btn btn-primary" type="submit">Save settings</button>
+            <p id="save-status" class="save-status" role="status" data-kind="" hidden></p>
+          </div>
+          <p id="settings-run-note" class="hint" hidden>A run is in progress. Changes to the keep list and speed limits apply the next time you start.</p>
+        </form>
+      </section>
+
+      <!-- Help -->
+      <section id="help" class="card" aria-labelledby="help-title">
+        <h2 id="help-title" class="section-title">Help</h2>
+        <details id="help-cookies" class="help">
+          <summary>How to get your X cookies</summary>
+          <ol class="help-steps">
+            <li>On your computer, open <strong>x.com</strong> in a normal browser and log in.</li>
+            <li>Press <kbd>F12</kbd> to open the developer tools. On a Mac in Chrome, press <kbd>Cmd</kbd> + <kbd>Option</kbd> + <kbd>I</kbd>.</li>
+            <li>Click the <strong>Application</strong> tab. In Firefox it is called <strong>Storage</strong>. If you can't see it, click the <strong>&raquo;</strong> arrows to show more tabs.</li>
+            <li>On the left, open <strong>Cookies</strong> and click <strong>https://x.com</strong>.</li>
+            <li>Find the row named <code>auth_token</code> and copy its <strong>Value</strong>. Then do the same for the row named <code>ct0</code>.</li>
+            <li>Paste them into the two boxes in <a href="#settings">Settings</a> above and press <strong>Save settings</strong>.</li>
+          </ol>
+          <div class="callout">
+            <p><strong>Treat these two values like a password.</strong> Anyone who has them can act as your X account, so never share them.</p>
+            <p>If you log out of x.com in that browser, they stop working.</p>
+            <p>If the bot later says <em>"Not logged in"</em>, just repeat these steps to get fresh values.</p>
+          </div>
+        </details>
+      </section>
+
+      <p class="foot small muted">Your cookies are stored only on your own server and are never shown again.</p>
+    </main>
+  </div>
+
+  <!-- ============ CONFIRM ============ -->
+  <dialog id="confirm-dialog" aria-labelledby="confirm-title" aria-describedby="confirm-body">
+    <div class="dialog-body">
+      <h2 id="confirm-title">Unfollow everyone?</h2>
+      <div id="confirm-body">
+        <p>This will unfollow <strong>everyone</strong> you follow on X, except the accounts on your keep list.</p>
+        <p id="confirm-keep" class="confirm-keep"></p>
+        <p>This tool cannot follow people back for you, so if you change your mind later you would have to do that yourself on x.com.</p>
+        <p>It runs slowly, over hours or even days, on purpose, to stay within X's limits. You can close this page and it keeps going. You can stop at any time and continue later.</p>
+        <p id="confirm-dirty" class="confirm-note" hidden>You have unsaved changes in Settings. They will be saved first.</p>
+        <div id="confirm-tip" class="confirm-tip" hidden>
+          <p><strong>Tip:</strong> you haven't run a preview yet. A preview shows exactly who would be unfollowed and changes nothing. We recommend trying it first.</p>
+          <button id="confirm-preview" class="btn btn-secondary btn-small" type="button">Run a preview instead</button>
+        </div>
+      </div>
+      <div class="dialog-actions">
+        <button id="confirm-no" class="btn btn-secondary" type="button" autofocus>Cancel</button>
+        <button id="confirm-yes" class="btn btn-danger" type="button">Yes, start unfollowing</button>
+      </div>
+    </div>
+  </dialog>
+
+  <div id="toast" class="toast" aria-live="polite" aria-atomic="false"></div>
+</body>
+</html>

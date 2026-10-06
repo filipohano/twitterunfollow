@@ -12,7 +12,9 @@ export class RateLimiter {
   }
 
   prune(now) {
-    this.actions = this.actions.filter((t) => t > now - DAY && t <= now + 60_000);
+    // Timestamps "in the future" mean the clock stepped backwards (RTC-less server, VM resume, NTP fix).
+    // Keep them, clamped to now: dropping them would forget recent activity and allow a fresh full quota.
+    this.actions = this.actions.map((t) => Math.min(t, now)).filter((t) => t > now - DAY);
   }
 
   record(now = Date.now()) {

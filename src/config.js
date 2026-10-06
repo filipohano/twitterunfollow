@@ -50,8 +50,8 @@ export function loadConfig(env = process.env) {
     burstSize: num(env, 'BURST_SIZE', 20, { integer: true, min: 1 }),
     burstPauseMinMs: num(env, 'BURST_PAUSE_MIN_SEC', 180) * 1000,
     burstPauseMaxMs: num(env, 'BURST_PAUSE_MAX_SEC', 360) * 1000,
-    maxPerHour: num(env, 'MAX_PER_HOUR', 40, { integer: true, min: 1 }),
-    maxPerDay: num(env, 'MAX_PER_DAY', 250, { integer: true, min: 1 }),
+    maxPerHour: num(env, 'MAX_PER_HOUR', 30, { integer: true, min: 1 }),
+    maxPerDay: num(env, 'MAX_PER_DAY', 150, { integer: true, min: 1 }),
     maxTotal: num(env, 'MAX_TOTAL', 0, { integer: true }),
 
     backoffBaseMs: num(env, 'BACKOFF_BASE_SEC', 900) * 1000,
@@ -64,7 +64,7 @@ export function loadConfig(env = process.env) {
       endWaitMs: 2500,
       capJitterMs: [5_000, 30_000],
       failurePauseMs: [5_000, 10_000],
-      emptyRecheckMs: 10_000,
+      verifyRetryWaitMs: 45_000,
       backoffMarginMs: 30_000,
     },
   };
