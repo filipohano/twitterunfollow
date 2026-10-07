@@ -9,6 +9,52 @@ Unfollows everyone on your X/Twitter account, slowly enough not to trip rate lim
 
 ---
 
+## Simplest option: a script you run in your own Chrome
+
+No server, no Docker, no cookies leaving your computer. `browser/unfollow-all.js` is one file that you paste into Chrome
+while you are logged in to x.com. It adds a small control panel (in Norwegian) to the page and clicks X's own
+"Following" buttons for you, from your own IP address and your own session.
+
+1. Go to `https://x.com/YOUR_HANDLE/following` (your **own** page; the script refuses to run anywhere else).
+2. Press **F12** (Mac: **Cmd+Option+I**) → **Sources** → **Snippets** → **+ New snippet**, paste the whole of
+   [`browser/unfollow-all.js`](browser/unfollow-all.js) (raw:
+   `https://raw.githubusercontent.com/filipohano/twitterunfollow/claude/fervent-hopper-yq9efx/browser/unfollow-all.js`),
+   and press **Ctrl+Enter** (Mac: **Cmd+Enter**). In the plain Console Chrome first asks you to type `allow pasting`.
+3. Press **Forhåndsvis** (preview), check the numbers, add handles to keep, pick a speed, then press **Start** twice.
+4. Keep the tab in its own visible window (Chrome slows hidden tabs down a lot). Progress is remembered in the browser,
+   so you can stop and run it again later.
+
+| Speed | Pause between unfollows | Caps (rolling) | About 1,000 accounts takes |
+| --- | --- | --- | --- |
+| Forsiktig | 15–45 s, break every 20 | 30 per hour, 150 per day | ~7 days |
+| **Normal** (default) | 8–20 s, break every 30 | 60 per hour, 200 per day | ~5 days |
+| Rask (high risk) | 4–10 s, break every 50 | 100 per hour, 300 per day | ~3–4 days |
+
+The limit is X's tolerance, not the script. X publishes no unfollow limit, so these are judgement calls: community
+reports call 100–150 per day safe and 300–400 per day high risk, so **Rask** is on the edge. The faster the speed, the
+higher the chance X restricts the account. Automating the website goes against X's Terms of Service.
+
+What the script does to stay out of trouble:
+
+- Runs only on **your own** `/handle/following` page (on someone else's page the buttons would be your follows).
+- Clicks the account's own unfollow button, then only confirms a dialog that names that exact `@handle`; it checks the
+  keep list again right before every click, and reads X's answer to confirm the right account was unfollowed.
+- Stops by itself the moment X answers "too many requests", "unable to follow/unfollow" or anything unexpected, and
+  then refuses to start again for about an hour (remembered across page reloads). It also stops if X receives an
+  unfollow it didn't ask for (for example from a second tab).
+- Hour and day caps are counted in memory and in the browser's storage, so they hold even if storage is damaged.
+- Tolerant keep list: handles separated by lines, spaces, commas or semicolons, with or without `@`, or pasted as x.com
+  URLs. Anything unclear is treated as "keep". Preview shows keep-list entries it couldn't find (typos).
+
+Like everything here it has been tested in a real browser against a mock of X's following page (including X's newer
+one-item unfollow menu, instant button flips, slow-loading lists and refusals), not against a live account. If X's
+page has changed in a way the script doesn't understand, it stops with an explanation instead of guessing.
+
+Tips: in Snippets you may have to type `allow pasting` first; if the panel says it can't tell who you are, the window is
+too narrow (X hides its left menu), so make it wider or undock DevTools into its own window.
+
+---
+
 ## Install on your Ubuntu server (the whole thing)
 
 You need: a server with **Docker already installed**, about **6 GB free disk space** and **2 GB RAM**
@@ -169,7 +215,7 @@ again later). Without Docker: `npm ci && npx playwright-core install chromium`, 
 
 ## Development & tests
 
-`npm test` runs everything in real Chromium against a mock of X (`test/mock-x.js`): the bot (pagination, keep list,
+`npm test` runs everything in real Chromium against a mock of X (`test/mock-x.js`): the Chrome-console script (28 tests), the bot (pagination, keep list,
 dry run, 429 / action-limit handling, wrong-row and false-"done" protections, resume), the HTTP API (login lockout, CSRF,
 Host checks, secrets handling, crash and frozen-browser recovery, restart-resume) and the dashboard UI. It needs a
 Chromium: `npx playwright-core install chromium`, or set `CHROMIUM_PATH`.
